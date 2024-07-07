@@ -21,7 +21,6 @@ class BooksRepository implements BooksRepositoryInterface
 
     public function store(array $data)
     {
-        Log::info($data);
         return Books::create($data);
     }
 
