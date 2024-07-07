@@ -25,7 +25,7 @@ class BooksController extends Controller
     {
         try {
             $data = $this->booksRepositoryInterface->getAll();
-            return ApiResponseHelper::sendResponse(BooksResource::collection($data), '', 200);
+            return ApiResponseHelper::sendResponse(BooksResource::collection($data), 'Books as retrieved successfully', 200);
         } catch (\Exception $e) {
             return ApiResponseHelper::throw($e, 'Failed to retrieve all books', 500);
         }
@@ -64,9 +64,15 @@ class BooksController extends Controller
         }
     }
 
+    // PUT /books/{book}
     public function update(UpdateBooksRequest $request, int $id)
     {
-        $data = $request->validate();
+        $data = [
+            'title' => $request->title,
+            'author' => $request->author,
+            'year' => $request->year
+        ];
+
         DB::beginTransaction();
         try {
             $book = $this->booksRepositoryInterface->update($data, $id);
@@ -80,12 +86,15 @@ class BooksController extends Controller
         }
     }
 
+    // DELETE /books/{book}
     public function destroy(int $id)
     {
+        $book =  $this->booksRepositoryInterface->getById($id);
+
         try {
             $deleted = $this->booksRepositoryInterface->delete($id);
             if ($deleted) {
-                return ApiResponseHelper::sendResponse(null, 'Book deleted successfully', 204);
+                return ApiResponseHelper::sendResponse(new BooksResource($book), 'Book deleted successfully', 200);
             }
             return ApiResponseHelper::sendResponse(null, 'Book not found', 404);
         } catch (\Exception $e) {

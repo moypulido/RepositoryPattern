@@ -24,9 +24,11 @@ class BooksRepository implements BooksRepositoryInterface
         return Books::create($data);
     }
 
-    public function update(array $data, int $id,)
+    public function update(array $data, int $id)
     {
-        return Books::whereId($id)->update($data);
+        $book = Books::findOrFail($id);
+        $book->update($data);
+        return $book;
     }
 
     public function delete(int $id)
