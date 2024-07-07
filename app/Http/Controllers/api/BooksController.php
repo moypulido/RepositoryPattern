@@ -10,7 +10,6 @@ use App\Http\Resources\BooksResource;
 use App\Interfaces\BooksRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 
-
 class BooksController extends Controller
 {
     private BooksRepositoryInterface $booksRepositoryInterface;
@@ -20,18 +19,18 @@ class BooksController extends Controller
         $this->booksRepositoryInterface = $booksRepositoryInterface;
     }
 
-    // GET /books
+    // GET /api/books
     public function index()
     {
         try {
             $data = $this->booksRepositoryInterface->getAll();
-            return ApiResponseHelper::sendResponse(BooksResource::collection($data), 'Books as retrieved successfully', 200);
+            return ApiResponseHelper::sendResponse(BooksResource::collection($data), 'Books retrieved successfully', 200);
         } catch (\Exception $e) {
-            return ApiResponseHelper::throw($e, 'Failed to retrieve all books', 500);
+            return ApiResponseHelper::throw($e, 'Failed to retrieve books', 500);
         }
     }
 
-    // GET /books/{book}
+    // GET /api/books/{id}
     public function show(int $id)
     {
         try {
@@ -45,14 +44,10 @@ class BooksController extends Controller
         }
     }
 
-    // POST /books
+    // POST /api/books
     public function store(StoreBooksRequest $request)
     {
-        $data = [
-            'title' => $request->title,
-            'author' => $request->author,
-            'year' => $request->year
-        ];
+        $data = $request->validated();
 
         DB::beginTransaction();
         try {
@@ -64,14 +59,10 @@ class BooksController extends Controller
         }
     }
 
-    // PUT /books/{book}
+    // PUT /api/books/{id}
     public function update(UpdateBooksRequest $request, int $id)
     {
-        $data = [
-            'title' => $request->title,
-            'author' => $request->author,
-            'year' => $request->year
-        ];
+        $data = $request->validated();
 
         DB::beginTransaction();
         try {
@@ -86,12 +77,11 @@ class BooksController extends Controller
         }
     }
 
-    // DELETE /books/{book}
+    // DELETE /api/books/{id}
     public function destroy(int $id)
     {
-        $book =  $this->booksRepositoryInterface->getById($id);
-
         try {
+            $book = $this->booksRepositoryInterface->getById($id);
             $deleted = $this->booksRepositoryInterface->delete($id);
             if ($deleted) {
                 return ApiResponseHelper::sendResponse(new BooksResource($book), 'Book deleted successfully', 200);
